@@ -23,14 +23,17 @@
 </p>
 
 <script>
-// 応答の定義（ハッシュ）    
+// 応答の定義（ハッシュ）
 let response = { //キーワードで返答ができるようにしました。
 		"誰":"わたしはアレクサではありません",
 		"何歳":"え、わたし、何歳にみえますか",
 		"元気":"元気ですよー",
 		"好きな食べ物":"焼肉です",
 		"どこ出身":"新潟県です",
-		"誕生日":"1月30日です"
+		"誕生日":"1月30日です",
+		"好きなスポーツ":"野球です",
+		"夢は":"海賊王になることです",
+		"好きな色":"ピンクです"
 };
 let weather = ['今日の天気', '明日の天気', '明後日の天気'] //天気の質問に対して、晴れか曇りか雨かをランダムに出力させました。
 let we_ans = ['晴れです', '曇りです', '雨です']
@@ -69,34 +72,38 @@ asr.onresult = function(event){
 		let res_counter = 0; //入力に対して答えたかどうかを判別するカウンタ
 		if (event.results[event.resultIndex].isFinal) { // 結果が確定（Final）のとき
 			asr.abort(); // 音声認識を停止
-			
-			
+
+			let answer;
+
 			for (let key in response){
 				if (transcript.indexOf(key) !== -1){ //キーワードが入っていれば答えを代入する。
-					output += transcript + " => " + response[key] + '<br>';
-					tts.text = response[key];
+					//output += transcript + " => " + response[key] + '<br>';
+					answer = response[key];
 					res_counter = 1;
 					break;
 				}
 			}
-			
+
 			if (res_counter == 0){
 				for (let key of weather){
 					if (transcript.indexOf(key) !== -1){ //天気の質問なら答えをランダムに代入する。
 						let x = Math.floor(Math.random() * 3);
-						output += transcript + " => " + we_ans[x] + '<br>';
-						tts.text = we_ans[x];
+						//output += transcript + " => " + we_ans[x] + '<br>';
+						answer = we_ans[x];
 						res_counter = 1;
 						break;
 					}
 				}
 			}
-			
+
 			if (res_counter == 0){
-					sorry = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
-					output += transcript + " => " + sorry + '<br>';
-					tts.text = sorry;
+					answer = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
+					//output += transcript + " => " + sorry + '<br>';
+					//answer = sorry;
 			}
+
+			output += transcript + " => " + answer + '<br>';
+			tts.text = answer;
 			
 			speechSynthesis.speak(tts); // 再生
 		} else { // 結果がまだ未確定のとき
