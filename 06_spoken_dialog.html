@@ -36,11 +36,11 @@ let response = { //キーワードで返答ができるようにしました。
 		"好き,色":"ピンクです"
 };
 let weather = {
-    "和歌山の天気": ["和歌山県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
-    "大阪の天気": ["大阪府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/27/"],
-    "京都の天気": ["京都府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/26/"],
-    "奈良の天気": ["奈良県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/29/"],
-    "兵庫の天気": ["兵庫県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/28/"]
+    "和歌山,天気": ["和歌山県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
+    "大阪,天気": ["大阪府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/27/"],
+    "京都,天気": ["京都府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/26/"],
+    "奈良,天気": ["奈良県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/29/"],
+    "兵庫,天気": ["兵庫県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/28/"]
 };
 
 const startButton = document.querySelector('#startButton'); // 開始ボタン
@@ -80,26 +80,6 @@ asr.onresult = function(event){
 			let answer;
 			let webpage;
 
-			/*let keys = Object.keys(response);
-			keys.forEach(function(key) {
-					let pattern = new RegExp('.*' + key + '.*'); // 正規表現の定義 . 任意の1文字, * 0回以上繰り返し
-					if(pattern.test(transcript)){ // transcriptにpatternがマッチしたらtrue
-						answer = response[key];
-						console.log(pattern + " : " + answer);
-						res_counter = 1;
-					}
-			});
-
-			if (res_counter == 0){
-				for (let key of weather){
-					if (transcript.indexOf(key) !== -1){ //天気の質問なら答えをランダムに代入する。
-						let x = Math.floor(Math.random() * 3);
-						answer = we_ans[x];
-						res_counter = 1;
-						break;
-					}
-				}
-			}*/
 
 			let keys = Object.keys(response);
 			keys.forEach(function(key) {
@@ -109,8 +89,6 @@ asr.onresult = function(event){
 							let pattern = new RegExp(word);
 							let flag_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
 							flag = flag && flag_test; // 両方trueならtrue
-							//console.log(pattern + '+' + ':' + flag_test);
-							//flag = flag && new RegExp(word).test(transcript);
 					});
 
 					if(flag){
@@ -120,17 +98,23 @@ asr.onresult = function(event){
 					}
 			});
 
-			if (res_counter == 0){
-				let keys_w = Object.keys(weather);
-				console.log(keys_w);
-				keys_w.forEach(function(key_w){
-					if (transcript.indexOf(key_w) !== -1){ //天気の質問なら答えをランダムに代入する。
+			let keys_w = Object.keys(weather);
+			keys_w.forEach(function(key_w) {
+					let flag_w = true;
+					console.log(transcript);
+					key_w.split(',').forEach(function(word) {
+							let pattern = new RegExp(word);
+							let flag_w_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
+							flag_w = flag_w && flag_w_test; // 両方trueならtrue
+					});
+
+					if(flag_w){
 						answer = weather[key_w][0];
 						webpage = weather[key_w][1];
-						res_counter = 1;
+							console.log(key_w + " : " + answer);
+							res_counter = 1;
 					}
-				});
-			}
+			});
 
 			if (res_counter == 0){
 					answer = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
@@ -143,7 +127,7 @@ asr.onresult = function(event){
 			// 再生が終了（end）ときのイベントハンドラ（終了したときに実行される）
 	    tts.onend = function(event){
             if(typeof webpage != 'undefined'){
-                location.href = webpage; // ページを移動
+								window.open(webpage);
             }
 	    }
 
