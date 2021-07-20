@@ -25,15 +25,15 @@
 <script>
 // 応答の定義（ハッシュ）
 let response = { //キーワードで返答ができるようにしました。
-		"誰":"わたしはアレクサではありません",
+		"あなた,誰":"わたしはアレクサではありません",
 		"何歳":"え、わたし、何歳にみえますか",
 		"元気":"元気ですよー",
-		"好きな食べ物":"焼肉です",
-		"どこ出身":"新潟県です",
+		"好きな,食べ物":"焼肉です",
+		"どこ,出身":"新潟県です",
 		"誕生日":"1月30日です",
-		"好きなスポーツ":"野球です",
+		"好きな,スポーツ":"野球です",
 		"夢は":"海賊王になることです",
-		"好きな色":"ピンクです"
+		"好きな,色":"ピンクです"
 };
 let weather = ['今日の天気', '明日の天気', '明後日の天気'] //天気の質問に対して、晴れか曇りか雨かをランダムに出力させました。
 let we_ans = ['晴れです', '曇りです', '雨です']
@@ -46,7 +46,6 @@ if (!'SpeechSynthesisUtterance' in window) {
 		alert("あなたのブラウザはSpeech Synthesis APIに未対応です。");
 }
 const tts = new SpeechSynthesisUtterance(); // TTSインスタンスを生成
-//tts.text = textForm.value; // テキストを設定
 tts.lang = "ja-JP"; // 言語(日本語)、英語の場合はen-US
 tts.rate = 1.0; // 速度
 tts.pitch = 1.0; // 声の高さ
@@ -75,9 +74,51 @@ asr.onresult = function(event){
 
 			let answer;
 
-			for (let key in response){
+			/*let keys = Object.keys(response);
+			keys.forEach(function(key) {
+					let pattern = new RegExp('.*' + key + '.*'); // 正規表現の定義 . 任意の1文字, * 0回以上繰り返し
+					if(pattern.test(transcript)){ // transcriptにpatternがマッチしたらtrue
+						answer = response[key];
+						console.log(pattern + " : " + answer);
+						res_counter = 1;
+					}
+			});
+
+			if (res_counter == 0){
+				for (let key of weather){
+					if (transcript.indexOf(key) !== -1){ //天気の質問なら答えをランダムに代入する。
+						let x = Math.floor(Math.random() * 3);
+						answer = we_ans[x];
+						res_counter = 1;
+						break;
+					}
+				}
+			}*/
+
+			let keys = Object.keys(response);
+			keys.forEach(function(key) {
+					let flag = true;
+					console.log(transcript);
+					key.split(',').forEach(function(word) {
+							let pattern = new RegExp(word);
+							let flag_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
+							flag = flag && flag_test; // 両方trueならtrue
+							console.log(pattern + '+' + ':' + flag_test);
+							//flag = flag && new RegExp(word).test(transcript);
+					});
+
+					if(flag){
+					answer = response[key];
+							console.log(key + " : " + answer);
+					}
+			});
+
+			if (res_counter == 0){
+					answer = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
+			}
+
+			/*for (let key in response){
 				if (transcript.indexOf(key) !== -1){ //キーワードが入っていれば答えを代入する。
-					//output += transcript + " => " + response[key] + '<br>';
 					answer = response[key];
 					res_counter = 1;
 					break;
@@ -88,7 +129,6 @@ asr.onresult = function(event){
 				for (let key of weather){
 					if (transcript.indexOf(key) !== -1){ //天気の質問なら答えをランダムに代入する。
 						let x = Math.floor(Math.random() * 3);
-						//output += transcript + " => " + we_ans[x] + '<br>';
 						answer = we_ans[x];
 						res_counter = 1;
 						break;
@@ -98,13 +138,12 @@ asr.onresult = function(event){
 
 			if (res_counter == 0){
 					answer = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
-					//output += transcript + " => " + sorry + '<br>';
-					//answer = sorry;
-			}
+			}*/
 
 			output += transcript + " => " + answer + '<br>';
+
 			tts.text = answer;
-			
+
 			speechSynthesis.speak(tts); // 再生
 		} else { // 結果がまだ未確定のとき
 				output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
@@ -120,6 +159,7 @@ startButton.addEventListener('click', function() {
 // 停止ボタンのイベントハンドラ
 stopButton.addEventListener('click', function() {
 		asr.stop();
+		asr.abort();
 })
 
 </script>
