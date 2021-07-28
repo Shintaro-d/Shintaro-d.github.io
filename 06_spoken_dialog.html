@@ -5,11 +5,11 @@
 <meta http-equiv="Content-Style-Type" content="text/css">
 <meta http-equiv="Content-Script-Type" content="text/javascript">
 <title>Spoken Dialog by Javascript</title>
-<link rel="stylesheet" type="text/css" href="style.css"> <!-- cssを作成して適用しました。　-->
+<link rel="stylesheet" type="text/css" href="style.css"> <!-- cssを作成して適用しました。-->
 </head>
 <body>
 
-<h1>課題：音声対話</h1>
+<h1>美味しいラーメン屋さんの検索</h1>
 
 <table> <!-- ボタンを横並びに表示させました。 -->
 <tr>
@@ -25,23 +25,33 @@
 <script>
 // 応答の定義（ハッシュ）
 let response = { //キーワードで返答ができるようにしました。
-		"あなた,誰":"わたしはアレクサではありません",
+		"こんにちは":"こんにちは、こちらは関西の美味しいラーメン屋さんを検索するサイトです",
+		"おはよう":"おはようございます、こちらは関西の美味しいラーメン屋さんを検索するサイトです",
+		"こんばんは":"こんばんは、こちらは関西の美味しいラーメン屋さんを検索するサイトです",
+		"あなた,誰":"わたしは、めんじろうと申します",
 		"何歳":"え、わたし、何歳にみえますか",
 		"元気":"元気ですよー",
-		"好き,食べ物":"焼肉です",
-		"どこ,出身":"新潟県です",
-		"誕生日":"1月30日です",
+		"好き,食べ物":"ラーメンです",
+		"どこ,出身":"東京です",
+		"誕生日":"7月11日です",
 		"好き,スポーツ":"野球です",
-		"夢は":"海賊王になることです",
-		"好き,色":"ピンクです"
+		"夢は":"全国のラーメン屋さんを制覇することです",
+		"好き,色":"です",
+		"好き,ラーメン":"豚骨です",
+		"好き,ラーメン屋":"選べません",
+		"おすすめ,ラーメン屋":"選べません"
 };
-let weather = {
-    "和歌山,天気": ["和歌山県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
-    "大阪,天気": ["大阪府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/27/"],
-    "京都,天気": ["京都府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/26/"],
-    "奈良,天気": ["奈良県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/29/"],
-    "兵庫,天気": ["兵庫県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/28/"]
+let ramen = {
+    "和歌山,ラーメン": ["和歌山県のラーメン屋さんを表示します", "https://wakayama-ramendb.supleks.jp"],
+    "大阪,ラーメン": ["大阪府のラーメン屋さんを表示します", "https://osaka-ramendb.supleks.jp"],
+    "京都,ラーメン": ["京都府のラーメン屋さんを表示します", "https://kyoto-ramendb.supleks.jp"],
+    "奈良,ラーメン": ["奈良県のラーメン屋さんを表示します", "https://nara-ramendb.supleks.jp"],
+    "兵庫,ラーメン": ["兵庫県のラーメン屋さんを表示します", "https://hyogo-ramendb.supleks.jp"],
+		"滋賀,ラーメン": ["滋賀県のラーメン屋さんを表示します","https://shiga-ramendb.supleks.jp"]
 };
+
+const URL = "https://jlp.yahooapis.jp/NLUService/V1/analyze?appid="; // APIのリクエストURL
+const APIID = "dj00aiZpPXJTc1ZxYllTaXV6RSZzPWNvbnN1bWVyc2VjcmV0Jng9ODU-"; // あなたのアプリケーションID
 
 const startButton = document.querySelector('#startButton'); // 開始ボタン
 const stopButton = document.querySelector('#stopButton'); // 停止ボタン
@@ -98,7 +108,7 @@ asr.onresult = function(event){
 					}
 			});
 
-			let keys_w = Object.keys(weather);
+			let keys_w = Object.keys(ramen);
 			keys_w.forEach(function(key_w) {
 					let flag_w = true;
 					console.log(transcript);
@@ -109,8 +119,8 @@ asr.onresult = function(event){
 					});
 
 					if(flag_w){
-						answer = weather[key_w][0];
-						webpage = weather[key_w][1];
+						answer = ramen[key_w][0];
+						webpage = ramen[key_w][1];
 							console.log(key_w + " : " + answer);
 							res_counter = 1;
 					}
@@ -118,6 +128,33 @@ asr.onresult = function(event){
 
 			if (res_counter == 0){
 					answer = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
+					/*let queryURL = URL + APIID + "&intext=" + transcript;
+					console.log(queryURL);
+
+					// HTTPリクエストの準備
+					const request = new XMLHttpRequest();
+					request.open('GET', queryURL, true);
+					request.responseType = 'json'; // レスポンスはJSON形式に変換
+
+					// HTTPの状態が変化したときのイベントハンドラ
+					request.onreadystatechange = function() {
+							if (this.readyState == 4 && this.status == 200) {
+							// readyState == 4 操作完了
+							// status == 200 リクエスト成功（HTTPレスポンス）
+
+							let res = this.response; // 結果はJSON形式
+
+							Object.keys(res.result).forEach(function (key) {
+								console.log(key + ": " + res.result[key])
+							});
+							// method が SAY のときのみ
+							if(res.result.method == "SAY"){
+								answer = res.result.param_text_tts || res.result.param_text;
+								tts.text = answer;
+							}
+						}
+					}*/
+
 			}
 
 			output += transcript + " => " + answer + '<br>';
@@ -132,6 +169,9 @@ asr.onresult = function(event){
 	    }
 
 			speechSynthesis.speak(tts); // 再生
+			// HTTPリクエストの実行
+			//request.send();
+
 		} else { // 結果がまだ未確定のとき
 				output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
 		}
