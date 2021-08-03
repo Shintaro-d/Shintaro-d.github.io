@@ -9,9 +9,14 @@
 </head>
 <body>
 
-<h1>美味しいラーメン屋さんの検索</h1>
+<h1>めんじろうのラーメン検索</h1>
 
-<table> <!-- ボタンを横並びに表示させました。 -->
+<div id="chara"> <!-- キャラクターの画像と簡単なwebの説明 -->
+<img src="menjiro.png" name="menjiro" alt="めんじろう" title="めんじろう">
+<p>関西のラーメン屋さんを検索できます。<br>めんじろうについての質問にも答えてくれるかも！？<br>例）大阪のラーメン屋さんを教えて</p>
+</div>
+
+<table> <!-- ボタンを横並びにしました。 -->
 <tr>
 <td><button id="startButton">start</button></td>
 <td><button id="stopButton">stop</button></td>
@@ -24,11 +29,12 @@
 
 <script>
 // 応答の定義（ハッシュ）
-let response = { //キーワードで返答ができるようにしました。
+let response = { //キーワードで返答します。
 		"こんにちは":"こんにちは、こちらは関西の美味しいラーメン屋さんを検索するサイトです",
 		"おはよう":"おはようございます、こちらは関西の美味しいラーメン屋さんを検索するサイトです",
 		"こんばんは":"こんばんは、こちらは関西の美味しいラーメン屋さんを検索するサイトです",
-		"あなた,誰":"わたしは、めんじろうと申します",
+		"ありがとう":"どういたしまして",
+		"誰":"わたしは、めんじろうと申します",
 		"何歳":"え、わたし、何歳にみえますか",
 		"元気":"元気ですよー",
 		"好き,食べ物":"ラーメンです",
@@ -37,11 +43,20 @@ let response = { //キーワードで返答ができるようにしました。
 		"好き,スポーツ":"野球です",
 		"夢は":"全国のラーメン屋さんを制覇することです",
 		"好き,色":"です",
-		"好き,ラーメン":"豚骨です",
+		"好き,ラーメン":"とんこつです",
 		"好き,ラーメン屋":"選べません",
-		"おすすめ,ラーメン屋":"選べません"
+		"おすすめ,ラーメン屋":"選べません",
+		"ラーメン,美味しくない":"ラーメンの魅力に気づいていないんですね、もったいないですよ！",
+		"ラーメン,まずい":"美味しいラーメンを食べたことがないんですね、私が教えましょうか？",
+		"ラーメン,まずかった":"美味しいラーメンを食べたことがないんですね、私が教えましょうか？",
+		"ラーメン,美味しいと思わない":"私が美味しいお店を教えますよ！",
+		"ラーメン,嫌い":"それは残念です",
+		"ラーメン,好き,ない":"このサイトで美味しいラーメンに出会えるかもしれませんよ！",
+		"ラーメン,好み,ない":"このサイトで美味しいラーメンに出会えるかもしれませんよ！",
+		"ラーメン,食べない":"このサイトで美味しいラーメンに出会えるかもしれませんよ！",
+		"ラーメン,食べへん":"このサイトで美味しいラーメンに出会えるかもしれませんよ！"
 };
-let ramen = {
+let ramen = { //webページとの連動
     "和歌山,ラーメン": ["和歌山県のラーメン屋さんを表示します", "https://wakayama-ramendb.supleks.jp"],
     "大阪,ラーメン": ["大阪府のラーメン屋さんを表示します", "https://osaka-ramendb.supleks.jp"],
     "京都,ラーメン": ["京都府のラーメン屋さんを表示します", "https://kyoto-ramendb.supleks.jp"],
@@ -49,6 +64,7 @@ let ramen = {
     "兵庫,ラーメン": ["兵庫県のラーメン屋さんを表示します", "https://hyogo-ramendb.supleks.jp"],
 		"滋賀,ラーメン": ["滋賀県のラーメン屋さんを表示します","https://shiga-ramendb.supleks.jp"]
 };
+let here = ["近く","この辺","ここ辺り","ここら辺","近場","近所"]; //府県を
 
 const URL = "https://jlp.yahooapis.jp/NLUService/V1/analyze?appid="; // APIのリクエストURL
 const APIID = "dj00aiZpPXJTc1ZxYllTaXV6RSZzPWNvbnN1bWVyc2VjcmV0Jng9ODU-"; // あなたのアプリケーションID
@@ -83,13 +99,14 @@ asr.onresult = function(event){
 		let transcript = event.results[event.resultIndex][0].transcript; // 結果文字列
 
 		let output_not_final = '';
-		let res_counter = 0; //入力に対して答えたかどうかを判別するカウンタ
+
 		if (event.results[event.resultIndex].isFinal) { // 結果が確定（Final）のとき
 			asr.abort(); // 音声認識を停止
 
 			let answer;
 			let webpage;
-
+			let res_counter = 0; //入力に対して答えたかどうかを判別するカウンタ
+			let web_counter = 0; //webページを表示する出力かどうかを判別するカウンタ
 
 			let keys = Object.keys(response);
 			keys.forEach(function(key) {
@@ -101,34 +118,46 @@ asr.onresult = function(event){
 							flag = flag && flag_test; // 両方trueならtrue
 					});
 
-					if(flag){
+					if(flag){//response内のキーワードとマッチしたとき
 							answer = response[key];
 							console.log(key + " : " + answer);
-							res_counter = 1;
+							res_counter = 1; //返答した
 					}
 			});
 
-			let keys_w = Object.keys(ramen);
-			keys_w.forEach(function(key_w) {
-					let flag_w = true;
-					console.log(transcript);
-					key_w.split(',').forEach(function(word) {
-							let pattern = new RegExp(word);
-							let flag_w_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
-							flag_w = flag_w && flag_w_test; // 両方trueならtrue
+			if (res_counter == 0){//まだ返答していないとき
+					let keys_r = Object.keys(ramen);
+					keys_r.forEach(function(key_w) {
+							let flag_r = true;
+							console.log(transcript);
+							key_w.split(',').forEach(function(word) {
+									let pattern = new RegExp(word);
+									let flag_r_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
+									flag_r = flag_r && flag_r_test; // 両方trueならtrue
+									console.log(pattern + '+' + ':' + flag_r_test);
+							});
+
+							if(flag_r){//ramen内のキーワードとマッチしたとき
+								answer = ramen[key_w][0]; //文を格納
+								webpage = ramen[key_w][1]; //urlを格納
+									console.log(key_w + " : " + answer);
+									res_counter = 1; //返答した
+									web_counter = 1; //webを表示する返答
+							}
 					});
+			}
 
-					if(flag_w){
-						answer = ramen[key_w][0];
-						webpage = ramen[key_w][1];
-							console.log(key_w + " : " + answer);
-							res_counter = 1;
+			if (res_counter == 0){//まだ返答していないとき
+				here.forEach(function(word) {
+					if(transcript.indexOf(word) != -1){//「近く」系の単語が入力にあるなら
+						answer = "そこは関西ですか？関西なら府県を指定してください。関西以外ならすみませんがお力になることはできません";
+						res_counter = 1;//返答した
 					}
-			});
+				});
+			}
 
-			if (res_counter == 0){
-					answer = "私の力不足で聞き取れませんでした" //undefindのかわりに文章を読み上げるようにしました。
-					/*let queryURL = URL + APIID + "&intext=" + transcript;
+			if (res_counter == 0){//まだ返答していないとき(APIを使う)
+					let queryURL = URL + APIID + "&intext=" + transcript;
 					console.log(queryURL);
 
 					// HTTPリクエストの準備
@@ -142,40 +171,49 @@ asr.onresult = function(event){
 							// readyState == 4 操作完了
 							// status == 200 リクエスト成功（HTTPレスポンス）
 
-							let res = this.response; // 結果はJSON形式
+								let res = this.response; // 結果はJSON形式
 
-							Object.keys(res.result).forEach(function (key) {
-								console.log(key + ": " + res.result[key])
-							});
-							// method が SAY のときのみ
-							if(res.result.method == "SAY"){
-								answer = res.result.param_text_tts || res.result.param_text;
-								tts.text = answer;
+								Object.keys(res.result).forEach(function (key_a) {
+									console.log(key_a + ": " + res.result[key_a])
+								});
+								// method が SAY のときのみ
+								if(res.result.method == "SAY"){
+									var answer_a = res.result.param_text_tts || res.result.param_text;
+									tts.text = answer_a;
+									console.log(answer_a)
+
+									output += transcript + ' => ' + "「" + answer_a + "」" + '<br>';
+									resultOutput.innerHTML = output;
+									speechSynthesis.speak(tts); // 再生
+								}
 							}
+					}
+					// HTTPリクエストの実行
+					request.send();
+				}
+
+				if(res_counter == 1){//返答しているなら（API以外で）
+					output += transcript + " => " + "「" + answer + "」" + '<br>';
+
+					tts.text = answer;
+
+					// 再生が終了（end）ときのイベントハンドラ（終了したときに実行される）
+					tts.onend = function(event){
+						if((web_counter == 1)&&(typeof webpage != 'undefined')){
+							window.open(webpage);//webページを新規タブで表示
 						}
-					}*/
+						web_counter = 0;//カウンタを戻す
+					}
 
-			}
+					speechSynthesis.speak(tts); // 再生
+					res_counter = 0;//カウンタを戻す
+				}
 
-			output += transcript + " => " + answer + '<br>';
+	} else { // 結果がまだ未確定のとき
+			output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
+	}
 
-			tts.text = answer;
-
-			// 再生が終了（end）ときのイベントハンドラ（終了したときに実行される）
-	    tts.onend = function(event){
-            if(typeof webpage != 'undefined'){
-								window.open(webpage);
-            }
-	    }
-
-			speechSynthesis.speak(tts); // 再生
-			// HTTPリクエストの実行
-			//request.send();
-
-		} else { // 結果がまだ未確定のとき
-				output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
-		}
-		resultOutput.innerHTML = output + output_not_final;
+	resultOutput.innerHTML = output + output_not_final;
 }
 
 // 開始ボタンのイベントハンドラ
@@ -188,8 +226,14 @@ stopButton.addEventListener('click', function() {
 		asr.stop();
 		asr.abort();
 })
-
 </script>
+
+<!-- Yahoo!JAPANのAPIを利用したときはクレジット表記が必要 -->
+<footer>
+<p>
+Web Services by Yahoo! JAPAN （https://developer.yahoo.co.jp/about）
+</p>
+</footer>
 
 </body>
 </html>

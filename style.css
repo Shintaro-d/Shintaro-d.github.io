@@ -2,12 +2,27 @@ body{ /*背景色の変更*/
 	background-color: #FFFFEE;
 	font-family: arial, sans-serif;
 }
-h1{ /*大きさ、色、余白の変更*/
-	width:320px;
+/*h1{ /*大きさ、色、余白の変更
+	width:500px;
 	font-size: 40px;
 	color: #FF66CC;
 	background-color:#FFEEFF;
-	padding:5px;
+	padding:10px;
+}*/
+h1 {
+	padding: 1rem 2rem;
+  color: #fff;
+  background: #094;
+  -webkit-box-shadow: 5px 5px 0 #007032;
+  box-shadow: 5px 5px 0 #007032;
+}
+
+#chara{
+	text-align: center;
+}
+table{
+	margin-left: auto;
+	margin-right: auto;
 }
 button#startButton{ /*大きさ、色、余白、影等の見た目の変更*/
 	width:100px;
@@ -19,12 +34,12 @@ button#startButton{ /*大きさ、色、余白、影等の見た目の変更*/
 	padding:8px 0 10px;
 	margin:5px;
 	color:#fff;
-	background-color:#6699FF;
-	border-width:2px;
-	border-color:#33CCFF;
+	background-color:#094;
+	border-width:1px;
+	border-color:#69b792;
 	border-radius:15px;
-	box-shadow:1px 1px #1a6ea0;
-	text-shadow:0 -1px #1a6ea0;
+	box-shadow:1px 1px #75be00;
+	text-shadow:0 -1px #75be00;
 }
 button#stopButton{
 	width:100px;
@@ -36,17 +51,24 @@ button#stopButton{
 	padding:8px 0 10px;
 	margin:5px;
 	color:#fff;
-	background-color:#6699FF;
-	border-width:2px;
-	border-color:#33CCFF;
+	background-color:#094;
+	border-width:1px;
+	border-color:#69b792;
 	border-radius:15px;
-	box-shadow:1px 1px #1a6ea0;
-	text-shadow:0 -1px #1a6ea0;
+	box-shadow:1px 1px #75be00;
+	text-shadow:0 -1px #75be00;
 }
-div#resultOutput{ /*字が出力されるので、背景は白、境界線も表示*/
+#resultOutput{ /*字が出力されるので、背景は白、境界線も表示*/
+	margin-left: 20%;
+	margin-right: 20%;
 	background-color:#fff;
 	border:solid;
 	border-width:2px;
 	border-color:gray;
 	border-radius:5px;
+}
+#footer{
+	position: fixed;
+	bottom: 0;
+	right: 0;
 }
